@@ -28,7 +28,7 @@ Both are accepted, but `externalId` is preferred for robust cross-system trackin
 ### Using the Component
 
 ```tsx showLineNumbers title="app/dashboard/layout.tsx"
-import { IdentifySupportVisitor } from "@cossistant/next";
+import { IdentifySupportVisitor } from "@cossistant/next/identify-visitor";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -64,26 +64,36 @@ export default async function DashboardLayout({ children }) {
 ```tsx showLineNumbers title="components/auth-handler.tsx"
 "use client";
 
-import { useVisitor } from "@cossistant/next";
+import { useVisitor } from "@cossistant/next/hooks";
 import { useEffect } from "react";
 
 export function AuthHandler({ user }) {
-  const { visitor, identify } = useVisitor();
+  const { identify } = useVisitor();
 
   useEffect(() => {
-    if (user && !visitor?.contact) {
-      identify({
-        externalId: user.id,
-        email: user.email,
-        name: user.name,
-        image: user.avatar,
-        metadata: {
-          plan: user.plan,
-          signupDate: user.createdAt,
-        },
-      });
+    if (!user) {
+      return;
     }
-  }, [user, visitor?.contact, identify]);
+
+    void identify({
+      externalId: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.avatar,
+      metadata: {
+        plan: user.plan,
+        signupDate: user.createdAt,
+      },
+    });
+  }, [
+    user?.id,
+    user?.email,
+    user?.name,
+    user?.avatar,
+    user?.plan,
+    user?.createdAt,
+    identify,
+  ]);
 
   return null;
 }
@@ -119,7 +129,7 @@ Metadata can be updated anytime to reflect user changes:
 ```tsx showLineNumbers title="components/upgrade-button.tsx"
 "use client";
 
-import { useVisitor } from "@cossistant/next";
+import { useVisitor } from "@cossistant/next/hooks";
 
 export function UpgradeButton() {
   const { setVisitorMetadata } = useVisitor();
@@ -139,11 +149,20 @@ export function UpgradeButton() {
 }
 ```
 
-## Efficient Metadata Updates
+## Metadata update semantics
 
-Cossistant **hashes metadata** before sending updates. If metadata hasn't changed, no API call is made—preventing unnecessary network requests and database writes.
+`<IdentifySupportVisitor />` hashes its metadata and avoids sending the same
+payload again. Direct `setVisitorMetadata()` calls always perform an update, so
+call that method in response to a real change rather than on every render.
 
-This means you can safely call `setVisitorMetadata()` or re-render `<IdentifySupportVisitor />` without performance concerns.
+Updates merge the supplied keys into the contact's existing metadata. A value
+of `null` is stored as `null`; it does not remove the key. Send only the fields
+you intend to change.
+
+When authentication changes on a shared browser, identify the new stable
+`externalId` even if a contact is already present. A generic
+`!visitor?.contact` guard can leave the previous account attached to the new
+session.
 
 ## One Contact, Multiple Visitors
 

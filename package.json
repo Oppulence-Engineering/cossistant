@@ -6,18 +6,22 @@
     "build": "turbo run build",
     "dev": "sh -c 'docker compose up -d && turbo run dev'",
     "lint": "turbo run lint",
-    "docs:links": "npx --yes markdown-link-check@3.11.2 packages/react/README.md --config docs/markdown-link-check.json",
+    "docs:links": "bun run check:docs-content && npx --yes markdown-link-check@3.11.2 packages/react/README.md --config docs/markdown-link-check.json",
     "check": "npx ultracite@latest check",
     "fix": "bunx ultracite fix",
     "check:ai-pipeline-hard-cut": "bash scripts/checks/ai-pipeline-hard-cut.sh",
     "check:browser-embed-size": "bun scripts/checks/browser-embed-size.ts",
-    "check-types": "bun run check:ai-pipeline-hard-cut && turbo run check-types",
+    "check:docs-content": "bun scripts/checks/docs-content.ts",
+    "check:sdk-focused-imports": "bun scripts/checks/sdk-focused-imports.ts",
+    "check-types": "bun run check:ai-pipeline-hard-cut && bun run check:sdk-focused-imports && turbo run check-types",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "turbo run build --filter=@cossistant/browser... --filter=@cossistant/next... --filter=facehash && changeset publish",
+    "changeset:publish": "bun run check:docs-content && turbo run build --filter=@cossistant/browser... --filter=@cossistant/next... --filter=@cossistant/protocol... --filter=facehash && changeset publish",
     "release": "bun run packages/release/src/index.ts create",
     "billing:backfill-free-subscriptions": "bun scripts/billing/backfill-free-subscriptions.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "turbo run test",
+    "check:openapi": "turbo run check:openapi"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",
@@ -66,6 +70,8 @@
   },
   "overrides": {
     "@ai-sdk/provider": "3.0.8",
-    "@polar-sh/sdk": "^0.44.0"
+    "@polar-sh/sdk": "^0.44.0",
+    "@asteasolutions/zod-to-openapi": "8.5.0",
+    "zod": "4.3.6"
   }
 }

@@ -15,6 +15,10 @@ The registry installs a Next.js-ready `<Support />` starter, the `CossistantProv
 
 ### 1. Add your public API key
 
+Create or copy a browser-safe public key in **Settings → Developers** and add
+your development and production hostnames. See
+[API Keys](/docs/quickstart/api-keys) for the exact rules.
+
 ```bash title=".env.local"
 NEXT_PUBLIC_COSSISTANT_API_KEY=pk_test_xxxx
 ```
@@ -77,7 +81,7 @@ NEXT_PUBLIC_COSSISTANT_API_KEY=pk_test_xxxx
 ### 3. Add `SupportProvider`
 
 ```tsx title="app/layout.tsx"
-import { SupportProvider } from "@cossistant/next";
+import { SupportProvider } from "@cossistant/next/provider";
 
 import "./globals.css";
 
@@ -118,7 +122,7 @@ Both entrypoints share the same widget theme behavior. If your app already expos
   <TabsContent value="plain">
 
 ```tsx title="app/layout.tsx"
-import { SupportProvider } from "@cossistant/next";
+import { SupportProvider } from "@cossistant/next/provider";
 import "@cossistant/next/styles.css";
 import "./globals.css";
 
@@ -143,22 +147,29 @@ export default function RootLayout({
 ### 5. Render the widget
 
 ```tsx title="app/page.tsx"
-import { Support } from "@cossistant/next";
+import { LazySupport } from "@cossistant/next/lazy-support";
+import { Suspense } from "react";
 
 export default function Page() {
   return (
     <main>
       <h1>You are ready to chat</h1>
-      <Support />
+      <Suspense fallback={null}>
+        <LazySupport />
+      </Suspense>
     </main>
   );
 }
 ```
 
+`LazySupport` keeps the complete widget UI out of the initial route chunk. If
+you control when support appears, call `preloadSupport` from the same entry on
+hover or focus before rendering it.
+
 ### 6. Identify logged-in visitors (optional)
 
 ```tsx title="app/(app)/layout.tsx"
-import { IdentifySupportVisitor } from "@cossistant/next";
+import { IdentifySupportVisitor } from "@cossistant/next/identify-visitor";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const user = {
@@ -180,11 +191,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-### 7. Display custom messages with `SupportConfig defaultMessages`
+### 7. Display custom messages with `SupportConfig defaultMessages` (optional)
 
 ```tsx title="app/page.tsx"
-import { Support, SupportConfig } from "@cossistant/next";
+import { LazySupport } from "@cossistant/next/lazy-support";
+import { SupportConfig } from "@cossistant/next/support-config";
 import { type DefaultMessage, SenderType } from "@cossistant/types";
+import { Suspense } from "react";
 
 const user: { name: string | null } = {
   name: "Jane Doe",
@@ -206,11 +219,21 @@ export default function Page() {
         defaultMessages={defaultMessages}
         quickOptions={quickOptions}
       />
-      <Support />
+      <Suspense fallback={null}>
+        <LazySupport />
+      </Suspense>
     </>
   );
 }
 ```
+
+## Verify the installation
+
+Reload the app and confirm that the support trigger appears, opens the home or
+conversation screen, and produces no `401`/`403` API responses. If the trigger
+is unstyled, import exactly one CSS entrypoint. A `401` usually means the public
+key is missing or invalid; a `403` usually means the current hostname is absent
+from the key's allowed domains. See [API Keys](/docs/quickstart/api-keys).
 
 ## Next in the Support docs
 

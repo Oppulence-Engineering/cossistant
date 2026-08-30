@@ -1,7 +1,7 @@
 {
   "name": "@cossistant/core",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "author": "Cossistant Team",
   "description": "Core library for connecting to Cossistant API and managing data fetching",
@@ -52,10 +52,10 @@
     "@cossistant/types": "workspace:*"
   },
   "dependencies": {
-    "@hono/zod-openapi": "^1.1.0",
+    "@hono/zod-openapi": "^1.5.1",
     "nanoid": "^5.1.5",
     "ulid": "^3.0.1",
-    "zod": "^4.1.8"
+    "zod": "^4.3.6"
   },
   "scripts": {
     "build": "tsdown && bun run prepare-package",

@@ -36,12 +36,38 @@ jobs:
       - name: Check types
         run: bun run check-types
 
+      - name: Check documentation content
+        run: bun run check:docs-content
+
+      - name: Check protocol OpenAPI document is up to date
+        run: bun run check:openapi
+
+      - name: Test protocol package
+        run: bun run test --filter @cossistant/protocol
+
+      # The SDK regression suites pin the provider lifecycle, data-hook and
+      # embed behaviour. They are the safety net for the published packages, so
+      # they gate merges rather than relying on a local `bun test` run.
+      - name: Test SDK packages
+        run: >-
+          bun run test
+          --filter @cossistant/react
+          --filter @cossistant/core
+          --filter @cossistant/types
+          --filter @cossistant/next
+          --filter @cossistant/browser
+
+      - name: Test REST OpenAPI contract
+        # Run this file on its own: bun's mock.module registrations are global to
+        # the test process, so partial factories in other files leak across a
+        # combined `bun test src` run.
+        run: cd apps/api && bun test src/rest/openapi-contract.test.ts
+
       - name: Build browser embed package
         run: bun run build --filter @cossistant/browser
 
-      # Temporarily disabled while we pause widget JS size enforcement.
-      # - name: Check browser embed bundle size
-      #   run: bun run check:browser-embed-size
+      - name: Check browser embed bundle size
+        run: bun run check:browser-embed-size
 
       - name: Build example integration app
         run: bun run build --filter @cossistant/example-nextjs-tailwind

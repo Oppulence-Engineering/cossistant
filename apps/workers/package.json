@@ -18,7 +18,7 @@
     "@polar-sh/sdk": "^0.44.0",
     "bullmq": "^5.34.8",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.10.1",
+    "hono": "^4.12.32",
     "ioredis": "^5.8.1",
     "pg": "^8.16.3",
     "react": "^19.2.0"
@@ -34,6 +34,7 @@
     "build": "bun build src/index.ts --compile --outfile server",
     "start": "bun run src/index.ts",
     "lint": "biome check .",
-    "check-types": "tsc --noEmit --project tsconfig.json"
+    "check-types": "tsc --noEmit --project tsconfig.json",
+    "test": "bun scripts/test-isolated.ts"
   }
 }
